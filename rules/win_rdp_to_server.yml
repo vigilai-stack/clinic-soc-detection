@@ -1,0 +1,48 @@
+title: Remote desktop to a server from someone other than IT
+id: e1f64233-5555-4e4b-8f77-7e8f90112207
+status: experimental
+description: >
+  Windows logon type 10 is Remote Desktop. Clinical staff do not take RDP
+  sessions to the domain controller, the EHR server, or the file server.
+  The IT account is filtered out.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4624
+    LogonType: 10
+    Computer|endswith:
+      - EHR-APP-01.riverside.local
+      - FS-01.riverside.local
+      - DC-01.riverside.local
+  filter_it:
+    TargetUserName: sam.patel
+  condition: selection and not filter_it
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021.001
+attack:
+  - id: T1021.001
+    name: Remote Desktop Protocol
+    tactic: Lateral Movement
+falsepositives:
+  - A new IT person who is not yet in the filter. Add the account, do not delete the rule.
+  - A vendor support session. It should be on the IT account, with a ticket.
+hipaa:
+  concern: >
+    The file server and the EHR server hold electronic protected health information.
+  minimum_necessary: >
+    A front desk or billing logon on a server is not part of that job.
+  breach_notification: >
+    RDP to a server is not itself proof that records were opened. Pair it with
+    the EHR audit and the file-share events before deciding notice. Still isolate
+    the workstation the same day.
+playbook: playbooks/win_rdp_to_server.md
+triage: >
+  Confirm it is not Sam Patel. Disconnect the source workstation from the
+  network and leave it powered on. Disable the account that logged on.
+  Look for a service-account logon and a security-log clear on the same PC.

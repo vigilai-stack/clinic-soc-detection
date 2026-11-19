@@ -1,0 +1,144 @@
+# Synthetic clinic. None of these people, numbers, or systems are real.
+clinic_name: Riverside Family Clinic
+timezone: America/Chicago
+sample_day: "2026-11-12"
+security_lead:
+  name: Sangeeta Sinha
+  organization: VigilAI Solutions
+  role: Privacy and security lead
+  phone: 555-0108
+  certifications:
+    - Security+
+    - CySA+
+    - CEH
+contacts:
+  office_manager:
+    name: Avery Brooks
+    phone: 555-0142
+  it:
+    name: Sam Patel
+    phone: 555-0174
+  after_hours_line: 555-0190
+business_hours:
+  mon: ["07:00", "19:00"]
+  tue: ["07:00", "19:00"]
+  wed: ["07:00", "19:00"]
+  thu: ["07:00", "19:00"]
+  fri: ["07:00", "19:00"]
+  sat: null
+  sun: null
+on_call:
+  "2026-11-12":
+    - priya.shah
+# Record types a job may open in ordinary work. A view outside this list
+# is a minimum-necessary question, not automatically a breach.
+roles:
+  front_desk:
+    allowed_record_types: [demographics, scheduling]
+  ma:
+    allowed_record_types: [demographics, scheduling, vitals]
+  rn:
+    allowed_record_types: [demographics, scheduling, vitals, clinical_note, lab_result, medication]
+  clinician:
+    allowed_record_types: [demographics, scheduling, vitals, clinical_note, lab_result, medication]
+  billing:
+    allowed_record_types: [demographics, billing, insurance]
+  office_manager:
+    allowed_record_types: [demographics, scheduling, billing, insurance]
+  it:
+    allowed_record_types: []
+  service:
+    allowed_record_types: []
+allowlists:
+  # Documentation range standing in for the EHR vendor's update server.
+  egress_ips:
+    - 203.0.113.50
+  webmail_domains:
+    - gmail.com
+    - yahoo.com
+    - hotmail.com
+    - outlook.com
+    - aol.com
+  partner_email_domains:
+    - riverside-clinic.example
+    - regionlab.example
+    - payer-clearinghouse.example
+  vpn_countries:
+    - US
+users:
+  - user: maria.chen
+    role: front_desk
+    host: WS-FRONT-01
+  - user: james.okonkwo
+    role: ma
+    host: WS-MA-01
+  - user: priya.shah
+    role: rn
+    host: WS-NURSE-01
+  - user: alex.morgan
+    role: clinician
+    host: WS-CLIN-01
+  - user: david.nguyen
+    role: billing
+    host: WS-BILLING-01
+  - user: avery.brooks
+    role: office_manager
+    host: WS-ADMIN-01
+  - user: sam.patel
+    role: it
+    host: WS-IT-01
+  - user: svc.ehr
+    role: service
+    host: EHR-APP-01
+  - user: svc.backup
+    role: service
+    host: BK-01
+hosts:
+  - name: FW-01
+    fqdn: FW-01.riverside.local
+    ip: 10.20.2.1
+    kind: firewall
+  - name: DC-01
+    fqdn: DC-01.riverside.local
+    ip: 10.20.2.5
+    kind: server
+  - name: EHR-APP-01
+    fqdn: EHR-APP-01.riverside.local
+    ip: 10.20.2.10
+    kind: server
+  - name: FS-01
+    fqdn: FS-01.riverside.local
+    ip: 10.20.2.20
+    kind: server
+  - name: BK-01
+    fqdn: BK-01.riverside.local
+    ip: 10.20.2.30
+    kind: server
+  - name: WS-FRONT-01
+    fqdn: WS-FRONT-01.riverside.local
+    ip: 10.20.1.11
+    kind: workstation
+  - name: WS-MA-01
+    fqdn: WS-MA-01.riverside.local
+    ip: 10.20.1.12
+    kind: workstation
+  - name: WS-NURSE-01
+    fqdn: WS-NURSE-01.riverside.local
+    ip: 10.20.1.13
+    kind: workstation
+  - name: WS-CLIN-01
+    fqdn: WS-CLIN-01.riverside.local
+    ip: 10.20.1.14
+    kind: workstation
+  - name: WS-BILLING-01
+    fqdn: WS-BILLING-01.riverside.local
+    ip: 10.20.1.15
+    kind: workstation
+  - name: WS-ADMIN-01
+    fqdn: WS-ADMIN-01.riverside.local
+    ip: 10.20.1.16
+    kind: workstation
+  - name: WS-IT-01
+    fqdn: WS-IT-01.riverside.local
+    ip: 10.20.1.17
+    kind: workstation

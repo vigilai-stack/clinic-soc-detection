@@ -1,0 +1,40 @@
+title: Account added to local Administrators
+id: 697ecaab-dddd-46c3-a7ef-556677889015
+status: experimental
+description: >
+  Windows event 4732 records a member added to a local group. This rule
+  is only the Administrators group. Adding a scanner account to Remote
+  Desktop Users does not match.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4732
+    TargetUserName: Administrators
+  condition: selection
+level: high
+tags:
+  - attack.persistence
+  - attack.t1098
+attack:
+  - id: T1098
+    name: Account Manipulation
+    tactic: Persistence
+falsepositives:
+  - IT adding a new admin during a ticket. It should still be a phone call, because the front desk should never be the account that does it.
+hipaa:
+  concern: >
+    A new local administrator can copy files and turn off logs on that machine.
+  minimum_necessary: >
+    Local admin is not part of front desk, billing, or nursing work.
+  breach_notification: >
+    The new account is a persistence step. Whether records were viewed is a
+    separate question answered by the EHR audit and the firewall log.
+playbook: playbooks/win_local_admin_added.md
+triage: >
+  See who added the member and whether that person is IT. If they are not,
+  disconnect the computer, remove the new admin after IT has a copy of the
+  event, and disable the account that made the change.

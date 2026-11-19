@@ -1,0 +1,53 @@
+title: Bulk clinical-record viewing after the clinic is closed
+id: c1d2e3f4-1111-4a22-8b33-3a4b5c6d7e03
+status: experimental
+description: >
+  One account opened clinical notes, labs, or medications for many patients
+  while the clinic was closed and the person was not on the on-call roster.
+  End-of-day charting for a handful of patients stays under the threshold.
+  The on-call nurse is excluded because evening charting is their job.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: ehr
+detection:
+  selection:
+    action: view
+    after_hours: true
+    on_call: false
+    record_type:
+      - clinical_note
+      - lab_result
+      - medication
+  filter_break_glass:
+    break_glass: true
+  condition: selection and not filter_break_glass | count(distinct patient_mrn) by user > 15
+  timeframe: 2h
+level: high
+tags:
+  - attack.collection
+  - attack.t1213
+attack:
+  - id: T1213
+    name: Data from Information Repositories
+    tactic: Collection
+falsepositives:
+  - A clinician who stays very late and charts a large panel. Raise the threshold or add them to the on-call roster for that night.
+  - The on-call nurse is excluded. A stolen on-call account is a gap, called out in the README.
+hipaa:
+  concern: >
+    Clinical notes, labs, and medications are electronic protected health information.
+  minimum_necessary: >
+    45 CFR 164.502(b) limits use to what the job needs. Volume after close, from
+    someone who is not on call, is a reason to ask why each chart was opened.
+  breach_notification: >
+    Workforce snooping can be a breach if the use was not permitted. Run the
+    45 CFR 164.402 risk assessment. Disable the account before the conversation
+    if the person still has a session. Audit-log review is part of
+    45 CFR 164.308(a)(1)(ii)(D) and 45 CFR 164.312(b).
+playbook: playbooks/ehr_after_hours_bulk_view.md
+triage: >
+  Confirm the account is not on today's on-call roster. If a minimum-necessary
+  alert exists for the same person, handle them together. Disable the EHR
+  account, keep the audit log, and call the office manager and the privacy lead.

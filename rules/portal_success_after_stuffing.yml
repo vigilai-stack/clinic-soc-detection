@@ -1,0 +1,45 @@
+title: Portal sign-in succeeded after a credential-stuffing burst
+id: 9b2e6f44-1aa0-4c77-9d12-2f3a4b5c6d02
+status: experimental
+description: >
+  A portal account signed in from an address that had just failed many
+  other usernames. Treat the session as someone else's until the patient
+  confirms it.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: portal
+correlation:
+  after_rule: portal_credential_stuffing
+  within: 30m
+  join: src_ip
+detection:
+  selection:
+    result: success
+  condition: selection
+level: critical
+tags:
+  - attack.initial_access
+  - attack.t1078
+attack:
+  - id: T1078
+    name: Valid Accounts
+    tactic: Initial Access
+falsepositives:
+  - The patient whose password was being guessed signs in from that same address within 30 minutes. Call them before assuming the session is theirs.
+hipaa:
+  concern: >
+    A successful portal session can show appointments, messages, and billing.
+  minimum_necessary: >
+    Not a workforce question. Someone outside the clinic may have opened a patient account.
+  breach_notification: >
+    Start a risk assessment the same day. The four factors in 45 CFR 164.402 are
+    what information was there, who opened it, whether it was actually viewed,
+    and what the clinic did to limit that. Counsel decides whether notice is
+    required. Do not wait for a perfect picture to begin the assessment.
+playbook: playbooks/portal_success_after_stuffing.md
+triage: >
+  Disable that portal account, end its sessions, and force a password reset.
+  Note the time of the successful session. Ask the patient whether it was them
+  before you close the incident. Keep the portal logs.

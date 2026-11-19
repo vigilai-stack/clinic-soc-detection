@@ -1,0 +1,46 @@
+title: Large upload to an address the clinic has not approved
+id: 253a8667-9999-428f-83ab-112233445611
+status: experimental
+description: >
+  More than 100 MB left the clinic over HTTPS to an address that is not the
+  EHR vendor update server. The sample threshold is for this synthetic day.
+  A real clinic would set it from a week of its own traffic.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: firewall
+detection:
+  selection:
+    action: allow
+    direction: outbound
+    dst_allowlisted: false
+    dst_port: 443
+    bytes_out|gt: 100000000
+  condition: selection
+level: high
+tags:
+  - attack.exfiltration
+  - attack.t1048
+attack:
+  - id: T1048
+    name: Exfiltration Over Alternative Protocol
+    tactic: Exfiltration
+falsepositives:
+  - A large software update to a new vendor address that has not been added to the allow list. Add the address after IT confirms it, and keep the alert for everything else.
+  - The EHR vendor address 203.0.113.50 is allow-listed in config and is enriched onto the event as dst_allowlisted.
+hipaa:
+  concern: >
+    A transfer this size can be a copy of records. It can also be a backup sent
+    to the wrong place. Either way, find out what the bytes were.
+  minimum_necessary: >
+    Not a workforce chart-access question until you know which system sent the traffic.
+  breach_notification: >
+    If the source was a workstation or the EHR server and you cannot show the
+    destination was a business associate, start the risk assessment. Pair this
+    alert with any EHR export and outbound email in the same hour.
+playbook: playbooks/fw_large_outbound.md
+triage: >
+  Note the source workstation and the destination address. Block the destination
+  on the firewall. Do not block all HTTPS. Ask IT which process on that PC was
+  talking outbound, and check the EHR export alert for the same time.
