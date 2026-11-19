@@ -1,0 +1,46 @@
+title: Macro or script attachment was delivered
+id: 475ca889-bbbb-44a1-85cd-334455667813
+status: experimental
+description: >
+  The gateway delivered an inbound message with a macro-enabled or script
+  attachment. A file the gateway already quarantined does not match, because
+  the user never received it.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: email
+detection:
+  selection:
+    direction: inbound
+    verdict: allowed
+    attachment_name|endswith:
+      - .docm
+      - .xlsm
+      - .iso
+      - .hta
+      - .js
+      - .vbs
+  condition: selection
+level: medium
+tags:
+  - attack.initial_access
+  - attack.t1566.001
+attack:
+  - id: T1566.001
+    name: Spearphishing Attachment
+    tactic: Initial Access
+falsepositives:
+  - A partner that still sends real macro spreadsheets. Ask them to send a different format. Until they do, this alert will fire and a person has to look.
+hipaa:
+  concern: >
+    The attachment is the usual way a front desk PC gets a program the clinic did not install.
+  minimum_necessary: >
+    Not a chart-access question. It becomes one if the person who received it later exports charts.
+  breach_notification: >
+    Delivery of a suspicious file is not a breach. A later export or a large upload from that PC may be.
+playbook: playbooks/email_macro_delivered.md
+triage: >
+  Call the recipient and tell them not to open the file. If they already opened it,
+  disconnect that PC from the network and look for encoded PowerShell under their name.
+  Quarantine the message if the gateway still can.

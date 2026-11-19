@@ -1,0 +1,46 @@
+title: Bulk export of patient records from the EHR
+id: d0e53122-4444-4d3a-9e66-6d7e8f901106
+status: experimental
+description: >
+  One account exported records for many patients inside an hour.
+  A normal release of information is one patient, or a few, and is not this.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: ehr
+detection:
+  selection:
+    action: export
+  filter_break_glass:
+    break_glass: true
+  condition: selection and not filter_break_glass | count(distinct patient_mrn) by user > 10
+  timeframe: 1h
+level: critical
+tags:
+  - attack.collection
+  - attack.t1005
+attack:
+  - id: T1005
+    name: Data from Local System
+    tactic: Collection
+falsepositives:
+  - A planned registry or quality report that exports a panel. Those should use a service account and a change ticket. This sample clinic has no such job.
+hipaa:
+  concern: >
+    An export makes a copy that can leave the EHR. That is how records end up
+    in email or on a USB stick.
+  minimum_necessary: >
+    Even a role that may view a chart should not export the panel without
+    a reason. Check the role alert if there is one.
+  breach_notification: >
+    Assume the copy may have left the clinic until you can show where it went.
+    Look at the email and firewall alerts from the same hour. Start the
+    45 CFR 164.402 assessment the same day. If 500 or more people are affected,
+    media notice (45 CFR 164.406) and notice to HHS (45 CFR 164.408) also apply.
+    This clinic's panel is small; count before you assume that threshold.
+playbook: playbooks/ehr_bulk_export.md
+triage: >
+  Disable the account. Find the export file on the workstation and the file
+  server, and do not open it on a machine you care about losing. Check outbound
+  email and large firewall transfers for the same user and the same hour.

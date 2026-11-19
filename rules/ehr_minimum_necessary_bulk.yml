@@ -1,0 +1,49 @@
+title: Workforce member opened many records outside their job
+id: b8d42011-3333-4c29-8d55-5c6d7e8f9005
+status: experimental
+description: >
+  The same minimum-necessary miss as the low rule, but across many patients
+  in two hours. That is no longer a mis-click.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: ehr
+detection:
+  selection:
+    action:
+      - view
+      - export
+      - print
+    role_allows_record: false
+  filter_break_glass:
+    break_glass: true
+  filter_release:
+    access_reason: patient_release
+  condition: selection and not filter_break_glass and not filter_release | count(distinct patient_mrn) by user > 8
+  timeframe: 2h
+level: high
+tags:
+  - attack.collection
+  - attack.t1213
+attack:
+  - id: T1213
+    name: Data from Information Repositories
+    tactic: Collection
+falsepositives:
+  - A role was given the wrong allowed record types in config, so a whole morning of legitimate work looks forbidden.
+hipaa:
+  concern: >
+    Many patients' records were opened by a job that does not need them.
+  minimum_necessary: >
+    Volume is what turns a possible mis-click into a minimum-necessary
+    problem under 45 CFR 164.502(b). List the record types and the patient count.
+  breach_notification: >
+    Treat this as a potential breach until the risk assessment says otherwise.
+    Preserve the EHR audit log. Do not ask the EHR vendor to purge it.
+playbook: playbooks/ehr_minimum_necessary_bulk.md
+triage: >
+  Disable the EHR account. Count distinct patients and record types.
+  If the access was after hours or followed a strange VPN session, read
+  those alerts with this one. Call the office manager and the privacy lead
+  before anyone interviews the employee.

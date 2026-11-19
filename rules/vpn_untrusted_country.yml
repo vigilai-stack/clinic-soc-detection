@@ -1,0 +1,46 @@
+title: VPN sign-in from a country the clinic does not use
+id: 586db99a-cccc-45b2-96de-445566778914
+status: experimental
+description: >
+  A successful VPN session from a country that is not on the clinic allow list.
+  This clinic's list is the United States. A failed attempt does not match.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: vpn
+detection:
+  selection:
+    action: success
+    country_allowlisted: false
+  condition: selection
+level: high
+tags:
+  - attack.persistence
+  - attack.initial_access
+  - attack.t1133
+  - attack.t1078
+attack:
+  - id: T1133
+    name: External Remote Services
+    tactic: Initial Access
+  - id: T1078
+    name: Valid Accounts
+    tactic: Initial Access
+falsepositives:
+  - A staff member who travels and tells the office manager first. Add the country for the travel dates, then remove it. Do not leave the list open.
+  - The country field comes from the firewall's geo lookup, which can be wrong for some VPN providers.
+hipaa:
+  concern: >
+    VPN puts the person on the clinic network, in reach of the EHR.
+  minimum_necessary: >
+    Check what the account opened after the session started. A billing account
+    that then reads clinical notes is the minimum-necessary problem.
+  breach_notification: >
+    The VPN session alone is not a disclosure. Charts opened during the session
+    may be. End the session before you spend time debating the country code.
+playbook: playbooks/vpn_untrusted_country.md
+triage: >
+  Call the person on a phone number the clinic already has, not on a number
+  from the email that announced the trip. If they do not confirm the session,
+  disable the account and disconnect the VPN. Then read the EHR audit for that user.

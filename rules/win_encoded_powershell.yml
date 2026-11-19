@@ -1,0 +1,41 @@
+title: Encoded PowerShell on a clinic computer
+id: 14297556-8888-417e-b29a-011223344510
+status: experimental
+description: >
+  powershell.exe was started with an encoded command, or the command line
+  mentions FromBase64String. The IT inventory script is a normal -File launch
+  and does not match. Encoded PowerShell is a common way to hide a downloaded script.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 4688
+    NewProcessName|endswith: '\powershell.exe'
+    CommandLine|re: '(^|[\s])(-enc|-encodedcommand)([\s:]|$)|frombase64string'
+  condition: selection
+level: high
+tags:
+  - attack.execution
+  - attack.t1059.001
+attack:
+  - id: T1059.001
+    name: PowerShell
+    tactic: Execution
+falsepositives:
+  - An IT script that really is delivered as an encoded command. This clinic's inventory script is not. If IT starts using -enc, name that script in a filter and keep the rule.
+hipaa:
+  concern: >
+    The command may be the step that comes before someone copies records or breaks backups.
+  minimum_necessary: >
+    Not a chart-access question. It is a sign the workstation is no longer only doing front desk work.
+  breach_notification: >
+    The encoded command is not itself a disclosure. Follow it forward: new accounts,
+    service-account logons, exports, email, and large uploads. Keep the command line.
+playbook: playbooks/win_encoded_powershell.md
+triage: >
+  Read the full command line and who ran it. Do not paste the encoded blob into
+  a random website to decode it. Disconnect the workstation if the user is not IT.
+  Check email for an attachment delivered to that person in the previous hour.

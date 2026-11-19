@@ -1,0 +1,48 @@
+title: Spreadsheet or archive sent to personal webmail
+id: 364b9778-aaaa-4390-94bc-223344556712
+status: experimental
+description: >
+  An outbound message to a personal webmail domain carried a csv, spreadsheet,
+  or zip larger than 1 MB. Appointment reminders and one-page statements are
+  smaller and are usually PDFs, so they do not match.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: email
+detection:
+  selection:
+    direction: outbound
+    recipient_webmail: true
+    attachment_bytes|gt: 1000000
+    attachment_name|endswith:
+      - .csv
+      - .xlsx
+      - .zip
+  condition: selection
+level: critical
+tags:
+  - attack.exfiltration
+  - attack.t1567
+attack:
+  - id: T1567
+    name: Exfiltration Over Web Service
+    tactic: Exfiltration
+falsepositives:
+  - A staff member emailing their own benefits form. Unlikely to be a multi-megabyte patient export, but read the file name before you lock the mailbox.
+hipaa:
+  concern: >
+    Personal webmail is not a clinic system. A csv of patients sent there is
+    an impermissible disclosure until someone shows it was something else.
+  minimum_necessary: >
+    Even a permitted use does not include sending the panel to a gmail account.
+  breach_notification: >
+    Ask the mail gateway to hold further mail from that mailbox. The copy is
+    already at the webmail provider if the message was delivered. Counsel uses
+    that fact in the 45 CFR 164.402 assessment. Notify the clinic's cyber insurer.
+playbook: playbooks/email_export_to_webmail.md
+triage: >
+  Read the sender, the recipient, and the file name. Disable the mailbox's
+  ability to send external mail. Do not forward the attachment to anyone else
+  while you investigate. If the file name looks like an EHR export, open the
+  bulk-export playbook too.

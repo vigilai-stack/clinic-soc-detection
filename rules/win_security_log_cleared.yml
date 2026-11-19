@@ -1,0 +1,42 @@
+title: Windows Security log was cleared
+id: 7a8fdbbc-eeee-47d4-b8f0-667788990116
+status: experimental
+description: >
+  Event 1102 means the Security log was cleared. Event 1100, the logging
+  service shutting down, does not match. Clearing the log is how someone
+  tries to hide the earlier steps.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventID: 1102
+  condition: selection
+level: critical
+tags:
+  - attack.defense_evasion
+  - attack.t1070.001
+attack:
+  - id: T1070.001
+    name: 'Indicator Removal: Clear Windows Event Logs'
+    tactic: Defense Evasion
+falsepositives:
+  - Almost none in a clinic. If IT cleared a log on purpose, they can say so, and the alert should still exist.
+hipaa:
+  concern: >
+    Without the Security log, the clinic cannot show who signed in around an incident.
+    That record is part of how 45 CFR 164.312(b) audit controls are supposed to work.
+  minimum_necessary: >
+    Not a chart-access question. It interferes with the investigation of one.
+  breach_notification: >
+    A cleared log does not tell you records were viewed. It tells you the usual
+    proof may be gone. Check whether the EHR audit, the firewall, and the mail
+    gateway still have their own copies, and preserve those immediately.
+playbook: playbooks/win_security_log_cleared.md
+triage: >
+  Do not reboot the machine. Disconnect it from the network. Export whatever
+  log remains, plus the EHR audit and the firewall log for that hour, to a
+  USB stick that stays with the privacy lead. Assume the earlier events on
+  that PC are incomplete.

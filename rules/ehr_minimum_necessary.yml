@@ -1,0 +1,53 @@
+title: Workforce member opened a record outside their job
+id: a7c31e90-2222-4b18-9c44-4b5c6d7e8f04
+status: experimental
+description: >
+  A view, export, or print of a record type this role is not allowed to use.
+  One chart is a coaching conversation. The bulk rule covers a stack of charts.
+  Break-glass and a documented patient-release export are excluded.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: clinic
+  service: ehr
+detection:
+  selection:
+    action:
+      - view
+      - export
+      - print
+    role_allows_record: false
+  filter_break_glass:
+    break_glass: true
+  filter_release:
+    access_reason: patient_release
+  condition: selection and not filter_break_glass and not filter_release | count(distinct patient_mrn) by user > 0
+  timeframe: 2h
+level: low
+tags:
+  - attack.collection
+  - attack.t1213
+attack:
+  - id: T1213
+    name: Data from Information Repositories
+    tactic: Collection
+falsepositives:
+  - A role that should have access but is missing from config/clinic.yaml. Fix the roster, do not ignore the alert by habit.
+  - One mistaken click. That is still worth a short conversation, which is why this severity is low.
+hipaa:
+  concern: >
+    The person opened a part of the record their job does not call for.
+  minimum_necessary: >
+    45 CFR 164.502(b). Front desk may use scheduling and demographics.
+    Billing may use claims and insurance. Clinical notes are for the
+    clinical staff. IT uses break-glass with a ticket, which this rule allows.
+  breach_notification: >
+    A single mistaken open is often handled as a workforce sanction and a
+    note in the risk log. Counsel still decides. If the same account also
+    has a bulk alert, follow the bulk playbook instead of coaching.
+playbook: playbooks/ehr_minimum_necessary.md
+triage: >
+  See whether this account also has a bulk minimum-necessary or after-hours
+  alert. If it does, do not treat this as coaching. If it is one chart,
+  ask the person what they were doing, document the answer, and have the
+  office manager talk with them.

@@ -1,0 +1,70 @@
+title: Backup recovery was turned off
+id: 03186445-7777-406d-a189-901122334409
+status: experimental
+description: >
+  Commands that delete volume shadow copies or turn off Windows recovery.
+  Ransomware does this before it encrypts files, so the clinic cannot roll back.
+  Listing shadows, or starting a backup, does not match.
+author: Sangeeta Sinha, VigilAI Solutions
+date: '2026-11-19'
+logsource:
+  product: windows
+  service: security
+detection:
+  proc:
+    EventID: 4688
+    NewProcessName|endswith:
+      - '\vssadmin.exe'
+      - '\wmic.exe'
+      - '\bcdedit.exe'
+      - '\wbadmin.exe'
+      - '\cmd.exe'
+      - '\powershell.exe'
+  sel_vss:
+    CommandLine|contains|all:
+      - vssadmin
+      - delete
+      - shadows
+  sel_wmic:
+    CommandLine|contains|all:
+      - shadowcopy
+      - delete
+  sel_bcd:
+    CommandLine|contains|all:
+      - bcdedit
+      - recoveryenabled
+      - ' no'
+  sel_wb:
+    CommandLine|contains|all:
+      - wbadmin
+      - delete
+      - catalog
+  condition: proc and (sel_vss or sel_wmic or sel_bcd or sel_wb)
+  timeframe: 30m
+  group_by:
+    - Computer
+level: critical
+tags:
+  - attack.impact
+  - attack.t1490
+attack:
+  - id: T1490
+    name: Inhibit System Recovery
+    tactic: Impact
+falsepositives:
+  - An administrator who intentionally rebuilds a machine and deletes old shadow copies. That belongs on the IT account, during a ticket, and it should still be a phone call.
+hipaa:
+  concern: >
+    If file copies are deleted and files are then encrypted, the clinic can lose
+    the only readily available copy of recent records.
+  minimum_necessary: >
+    Not a chart-access question. This is availability of the systems that store records.
+  breach_notification: >
+    Loss of availability of electronic protected health information can be a
+    breach discussion under the HIPAA rules. Call counsel the same day. Also
+    call the clinic's cyber insurer. Do not pay anyone from a staff inbox.
+playbook: playbooks/win_inhibit_recovery.md
+triage: >
+  Unplug the network cable on the named computer and on any PC that logged
+  into it in the previous hour. Leave the machines on. Stop staff from using
+  the shared drive. Call IT and the privacy lead before anyone reboots.
